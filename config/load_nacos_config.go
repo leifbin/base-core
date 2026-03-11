@@ -27,7 +27,7 @@ func setLastFullConfig(cfg interface{}) {
 	lastFullConfig = cfg
 }
 
-func LoadNocosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T)) error {
+func LoadNocosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T, []ConfigDiff)) error {
 	if nacosClient == nil {
 		if err := InitNacosClient(cfg); err != nil {
 			return err
@@ -53,10 +53,16 @@ func LoadNocosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T)) err
 	// 初始化 lastFullConfig
 	setLastFullConfig(dest)
 
-	debouncer := NewDebouncer(20*time.Second, func(newCfg *T) {
-		setLastFullConfig(newCfg)
-		slog.Debug(">>>防抖触发配置变更回调>>>", "config", newCfg)
-		onConfigChange(newCfg)
+	// 定义防抖回调包装结构
+	type debouncedData struct {
+		Config *T
+		Diffs  []ConfigDiff
+	}
+
+	debouncer := NewDebouncer(20*time.Second, func(data debouncedData) {
+		setLastFullConfig(data.Config)
+		slog.Debug(">>>防抖触发配置变更回调>>>", "diffs_count", len(data.Diffs))
+		onConfigChange(data.Config, data.Diffs)
 	})
 
 	err = nacosClient.ListenConfig(vo.ConfigParam{
@@ -69,10 +75,10 @@ func LoadNocosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T)) err
 				slog.Error("解析更新后的配置失败", "err", unmarshalErr)
 				return // 不要去覆盖 lastFullConfig
 			}
-			changed := CompareConfigs(GetLastFullConfig(), &newConfig)
+			changed, diffs := CompareConfigs(GetLastFullConfig(), &newConfig)
 			if changed {
 				slog.Debug(">>>配置变更（进入防抖通道）>>>", slog.Bool("CompareConfigs", changed))
-				debouncer.Submit(&newConfig)
+				debouncer.Submit(debouncedData{Config: &newConfig, Diffs: diffs})
 			} else {
 				slog.Warn("配置内容未发生实质性变化，跳过回调")
 			}
