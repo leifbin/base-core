@@ -40,10 +40,11 @@ func main() {
 	slog.SetDefault(logger)
 	// 打印环境变量
 	slog.Debug("🚀 基础环境变量加载完成:")
-	slog.Debug("NACOS_SERVER", envCfg.SERVER_IP, "NACOS_PORT", envCfg.SERVER_PORT)
-	slog.Debug("NAMESPACE", envCfg.NAMESPACE)
-	slog.Debug("DATA_ID", envCfg.DATA_ID)
-	slog.Debug("GROUP", envCfg.GROUP)
+	slog.Debug("NACOS_SERVER", "NACOS_SERVER", envCfg.SERVER_IP)
+	slog.Debug("NACOS_PORT", "NACOS_PORT", envCfg.SERVER_PORT)
+	slog.Debug("NAMESPACE", "NAMESPACE", envCfg.NAMESPACE)
+	slog.Debug("DATA_ID", "DATA_ID", envCfg.DATA_ID)
+	slog.Debug("GROUP", "GROUP", envCfg.GROUP)
 
 	// 2. 初始化 Nacos 客户端
 	err := config.InitNacosClient(envCfg)
