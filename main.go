@@ -4,6 +4,7 @@ import (
 	"base-core/config"
 	"fmt"
 	"log/slog"
+	"os"
 )
 
 // DomainConfig 子域名配置
@@ -32,15 +33,17 @@ type AppConfig struct {
 func main() {
 	// 1. 加载环境变量（包含 Nacos 连接信息）
 	envCfg := config.LoadEnvConfig()
-
+	//初始化日志
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: envCfg.LOG_LEVEL, // 通过 config 获取日志级别
+	}))
+	slog.SetDefault(logger)
 	// 打印环境变量
-	fmt.Println("==============================")
-	fmt.Println("🚀 基础环境变量加载完成:")
-	fmt.Printf("NACOS_SERVER: %s:%d\n", envCfg.SERVER_IP, envCfg.SERVER_PORT)
-	fmt.Printf("NAMESPACE:    %s\n", envCfg.NAMESPACE)
-	fmt.Printf("DATA_ID:      %s\n", envCfg.DATA_ID)
-	fmt.Printf("GROUP:        %s\n", envCfg.GROUP)
-	fmt.Println("==============================")
+	slog.Debug("🚀 基础环境变量加载完成:")
+	slog.Debug("NACOS_SERVER", envCfg.SERVER_IP, "NACOS_PORT", envCfg.SERVER_PORT)
+	slog.Debug("NAMESPACE", envCfg.NAMESPACE)
+	slog.Debug("DATA_ID", envCfg.DATA_ID)
+	slog.Debug("GROUP", envCfg.GROUP)
 
 	// 2. 初始化 Nacos 客户端
 	err := config.InitNacosClient(envCfg)
@@ -65,16 +68,17 @@ func main() {
 	}
 
 	// 4. 打印从 Nacos 获取的 YAML 配置内容
-	fmt.Println("==============================")
-	fmt.Println("📦 Nacos YAML 嵌套配置加载完成:")
-	fmt.Printf("AppPort:    %d\n", appCfg.Base.AppPort)
-	fmt.Printf("TestMode:   %v\n", appCfg.Base.TestMode)
-	fmt.Printf("LarkURL:    %s\n", appCfg.Base.LarkURL)
-	fmt.Printf("Domains数:  %d\n", len(appCfg.Domains))
+	slog.Debug("📦 Nacos YAML 嵌套配置加载完成:")
+	slog.Debug("AppPort", appCfg.Base.AppPort)
+	slog.Debug("TestMode", appCfg.Base.TestMode)
+	slog.Debug("LarkURL", appCfg.Base.LarkURL)
+	slog.Debug("Domains数:", len(appCfg.Domains))
 	for _, d := range appCfg.Domains {
-		fmt.Printf("  - Domain: %s, SubDomains: %v\n", d.Name, d.SubDomain)
+		slog.Debug("Domain",
+			slog.String("domain", d.Name),
+			slog.Any("sub_domains", d.SubDomain),
+		)
 	}
-	fmt.Println("==============================")
 
 	// 保持程序运行，以便监听配置变更
 	select {}

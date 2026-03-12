@@ -46,7 +46,7 @@ err := config.LoadNocosConfig(envCfg, &cfg, func(newCfg *AppConfig) {
 ```bash
 export NACOS_SERVER_IP="afdf02d7f82004e9c835dd9a6ac31f6f-aff024302e5247be.elb.ap-east-1.amazonaws.com"
 export NACOS_SERVER_PORT=8848
-export NACOS_NAMESPACE="devops"
+export NACOS_NAMESPACE="test"
 export NACOS_DATA_ID="domain.yaml"
 export NACOS_GROUP="DEFAULT_GROUP"
 export NACOS_USER="nacos"
