@@ -70,3 +70,16 @@ $env:LOG_LEVEL = "DEBUG"
 
 go run main.go
 ```
+
+```
+编译
+参数 / 环境变量	类型	含义	备注
+CGO_ENABLED=0	环境变量	禁用 CGO，生成纯 Go 静态链接二进制	避免依赖系统 C 库，更适合容器或跨平台部署
+GOOS=linux	环境变量	指定目标操作系统为 Linux	交叉编译时使用，比如在 Mac 或 Windows 上生成 Linux 二进制
+GOARCH=amd64	环境变量	指定目标 CPU 架构为 x86_64	如果不加，默认使用当前机器架构
+-ldflags="-s -w"	编译参数	去掉符号表(-s)和调试信息(-w)	生成更小的二进制文件
+-buildvcs=false	编译参数	不在二进制中记录版本控制信息	默认 true，会写 commit hash 等信息到二进制
+-o app	编译参数	指定输出二进制文件名为 app	默认输出是当前目录下的源文件名
+
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w"  -buildvcs=false -o app 
+```
