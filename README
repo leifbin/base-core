@@ -36,7 +36,7 @@ type AppConfig struct {
 
 // 加载配置
 var cfg AppConfig
-err := config.LoadNocosConfig(envCfg, &cfg, func(newCfg *AppConfig) {
+err := config.LoadNacosConfig(envCfg, &cfg, func(newCfg *AppConfig) {
     // 处理变更
 })
 ```

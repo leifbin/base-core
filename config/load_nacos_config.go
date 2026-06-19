@@ -27,7 +27,7 @@ func setLastFullConfig(cfg interface{}) {
 	lastFullConfig = cfg
 }
 
-func LoadNocosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T, []ConfigDiff)) error {
+func LoadNacosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T, []ConfigDiff)) error {
 	if nacosClient == nil {
 		if err := InitNacosClient(cfg); err != nil {
 			return err

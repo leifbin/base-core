@@ -56,7 +56,7 @@ func main() {
 	//// 3. 从 Nacos 获取并监听 YAML 配置
 	// 这里演示如何使用自定义的 AppConfig 结构，并接收变更列表
 	var appCfg AppConfig
-	err = config.LoadNocosConfig(envCfg, &appCfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
+	err = config.LoadNacosConfig(envCfg, &appCfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
 		slog.Info("🔔 Nacos 配置发生变更", "diff_count", len(diffs))
 		for _, d := range diffs {
 			slog.Info(fmt.Sprintf("变更详情: 路径=%s, 类型=%s", d.Path, d.Type))
