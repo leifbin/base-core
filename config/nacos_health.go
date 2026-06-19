@@ -26,7 +26,7 @@ func UpdateNacosHealth(healthy bool, errMsg string) {
 
 func StartNacosHealthMonitor(configClient config_client.IConfigClient, cfg EnvConfig) {
 	go func() {
-		ticker := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 
 		for range ticker.C {

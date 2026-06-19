@@ -1,6 +1,9 @@
 package config
 
-import "time"
+import (
+	"log/slog"
+	"time"
+)
 
 // 新建 Debouncer
 func NewDebouncer[T any](delay time.Duration, onFire func(T)) *Debouncer[T] {
@@ -18,7 +21,7 @@ func (d *Debouncer[T]) Submit(cfg T) {
 	select {
 	case d.ch <- cfg:
 	default:
-		// 如果已經有一個在等待，就丟掉，避免阻塞
+		slog.Warn("防抖通道已满，丢弃旧配置", "channel_len", len(d.ch))
 	}
 }
 
@@ -39,7 +42,14 @@ func (d *Debouncer[T]) run() {
 				}
 				timer.Reset(d.delay)
 			case <-timer.C:
-				d.onFire(latestCfg)
+				func() {
+					defer func() {
+						if r := recover(); r != nil {
+							slog.Error("防抖回调 panic 已恢复", "recover", r)
+						}
+					}()
+					d.onFire(latestCfg)
+				}()
 				goto NEXT
 			}
 		}

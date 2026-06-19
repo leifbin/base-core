@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"log/slog"
+	"sync"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/config_client"
@@ -11,7 +12,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var nacosClient config_client.IConfigClient
+var (
+	nacosClient config_client.IConfigClient
+	nacosMu     sync.RWMutex
+)
 
 func InitNacosClient(cfg EnvConfig) error {
 	serverConfig := []constant.ServerConfig{
@@ -37,15 +41,18 @@ func InitNacosClient(cfg EnvConfig) error {
 	}
 	slog.Info("nacos client 初始化成功")
 
+	nacosMu.Lock()
 	nacosClient = client
+	nacosMu.Unlock()
 	return nil
 }
 
 func FetchAppConfigFromNacos[T any](cfg EnvConfig, dest *T) error {
-	if nacosClient == nil {
+	client := getNacosClient()
+	if client == nil {
 		return fmt.Errorf("nacos client 未初始化")
 	}
-	content, err := nacosClient.GetConfig(vo.ConfigParam{
+	content, err := client.GetConfig(vo.ConfigParam{
 		DataId: cfg.DATA_ID,
 		Group:  cfg.GROUP,
 	})

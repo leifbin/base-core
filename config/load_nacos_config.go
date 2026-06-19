@@ -28,12 +28,14 @@ func setLastFullConfig(cfg interface{}) {
 }
 
 func LoadNacosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T, []ConfigDiff)) error {
-	if nacosClient == nil {
+	client := getNacosClient()
+	if client == nil {
 		if err := InitNacosClient(cfg); err != nil {
 			return err
 		}
+		client = getNacosClient()
 	}
-	content, err := nacosClient.GetConfig(vo.ConfigParam{
+	content, err := client.GetConfig(vo.ConfigParam{
 		DataId: cfg.DATA_ID,
 		Group:  cfg.GROUP,
 	})
@@ -88,6 +90,6 @@ func LoadNacosConfig[T any](cfg EnvConfig, dest *T, onConfigChange func(*T, []Co
 		slog.Error("监听配置失败", "err", err)
 		return err
 	}
-	StartNacosHealthMonitor(nacosClient, cfg)
+	StartNacosHealthMonitor(getNacosClient(), cfg)
 	return nil
 }
