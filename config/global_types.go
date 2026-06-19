@@ -3,6 +3,7 @@ package config
 
 import (
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/nacos-group/nacos-sdk-go/clients/config_client"
@@ -25,6 +26,9 @@ type Debouncer[T any] struct {
 	ch     chan T
 	delay  time.Duration
 	onFire func(T)
+	stop   chan struct{}
+	done   chan struct{}
+	once   sync.Once
 }
 
 // getNacosClient 是线程安全的 nacosClient 访问辅助函数

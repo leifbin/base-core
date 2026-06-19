@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 // DomainConfig 子域名配置
@@ -56,7 +58,7 @@ func main() {
 	//// 3. 从 Nacos 获取并监听 YAML 配置
 	// 这里演示如何使用自定义的 AppConfig 结构，并接收变更列表
 	var appCfg AppConfig
-	err = config.LoadNacosConfig(envCfg, &appCfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
+	cleanup, err := config.LoadNacosConfig(envCfg, &appCfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
 		slog.Info("🔔 Nacos 配置发生变更", "diff_count", len(diffs))
 		for _, d := range diffs {
 			slog.Info(fmt.Sprintf("变更详情: 路径=%s, 类型=%s", d.Path, d.Type))
@@ -82,5 +84,9 @@ func main() {
 	}
 
 	// 保持程序运行，以便监听配置变更
-	select {}
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-sigCh
+	slog.Info("收到退出信号，正在关闭...", "signal", sig)
+	cleanup()
 }

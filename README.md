@@ -36,8 +36,11 @@ type AppConfig struct {
 
 // 加载配置
 var cfg AppConfig
-err := config.LoadNacosConfig(envCfg, &cfg, func(newCfg *AppConfig) {
-    // 处理变更
+err := config.LoadNacosConfig(envCfg, &cfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
+    // 处理配置变更
+    for _, d := range diffs {
+        fmt.Printf("变更: %s, 旧: %v, 新: %v\n", d.Path, d.OldValue, d.NewValue)
+    }
 })
 ```
 

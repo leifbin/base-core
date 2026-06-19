@@ -10,8 +10,11 @@ import (
 type DiffType string
 
 const (
+	// DiffUpdate 表示配置项被修改
 	DiffUpdate DiffType = "UPDATE"
-	DiffAdd    DiffType = "ADD"
+	// DiffAdd 表示新增了配置项
+	DiffAdd DiffType = "ADD"
+	// DiffDelete 表示删除了配置项
 	DiffDelete DiffType = "DELETE"
 )
 

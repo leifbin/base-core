@@ -17,6 +17,8 @@ var (
 	nacosMu     sync.RWMutex
 )
 
+// InitNacosClient 根据环境配置初始化 Nacos 配置中心客户端。
+// 在调用 LoadNacosConfig 或 FetchAppConfigFromNacos 前需先调用此函数。
 func InitNacosClient(cfg EnvConfig) error {
 	serverConfig := []constant.ServerConfig{
 		{IpAddr: cfg.SERVER_IP, Port: cfg.SERVER_PORT},
