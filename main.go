@@ -70,7 +70,7 @@ func main() {
 
 	// 4. 打印从 Nacos 获取的 YAML 配置内容
 	slog.Debug("📦 Nacos YAML 嵌套配置加载完成:")
-	slog.Debug("AppPort", appCfg.Base.AppPort)
+	slog.Debug("AppPort", "port", appCfg.Base.AppPort)
 	slog.Debug("TestMode", appCfg.Base.TestMode)
 	slog.Debug("LarkURL", appCfg.Base.LarkURL)
 	slog.Debug("Domains数:", len(appCfg.Domains))
