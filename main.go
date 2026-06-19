@@ -1,11 +1,12 @@
 package main
 
 import (
-	"base-core/config"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/leifbin/base-core/config"
 )
 
 // DomainConfig 子域名配置

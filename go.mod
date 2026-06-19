@@ -1,4 +1,4 @@
-module base-core
+module github.com/leifbin/base-core
 
 go 1.23.4
 
