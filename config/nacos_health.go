@@ -8,7 +8,6 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-// NacosHealth 全局变量，记录 Nacos 配置中心的健康检查状态。
 var NacosHealth struct {
 	Healthy   bool
 	LastCheck time.Time
@@ -16,7 +15,6 @@ var NacosHealth struct {
 	Mutex     sync.RWMutex
 }
 
-// UpdateNacosHealth 更新 Nacos 健康状态（线程安全）。
 func UpdateNacosHealth(healthy bool, errMsg string) {
 	NacosHealth.Mutex.Lock()
 	defer NacosHealth.Mutex.Unlock()
@@ -26,16 +24,17 @@ func UpdateNacosHealth(healthy bool, errMsg string) {
 	NacosHealth.Error = errMsg
 }
 
-// StartNacosHealthMonitor 启动后台 goroutine，定期（30秒）检查 Nacos 连接状态。
-// 检查结果会更新到 NacosHealth 全局变量。
-func StartNacosHealthMonitor(configClient config_client.IConfigClient, cfg EnvConfig, stop <-chan struct{}) {
-	go func() {
-		ticker := time.NewTicker(30 * time.Second)
-		defer ticker.Stop()
+var healthOnce sync.Once
 
-		for {
-			select {
-			case <-ticker.C:
+// StartNacosHealthMonitor 启动后台 goroutine 定期检查 Nacos 连接状态。
+// 全局只会启动一个实例，无论被调用多少次。
+func StartNacosHealthMonitor(configClient config_client.IConfigClient, cfg EnvConfig) {
+	healthOnce.Do(func() {
+		go func() {
+			ticker := time.NewTicker(30 * time.Second)
+			defer ticker.Stop()
+
+			for range ticker.C {
 				_, err := configClient.GetConfig(vo.ConfigParam{
 					DataId: cfg.DATA_ID,
 					Group:  cfg.GROUP,
@@ -45,9 +44,7 @@ func StartNacosHealthMonitor(configClient config_client.IConfigClient, cfg EnvCo
 				} else {
 					UpdateNacosHealth(true, "")
 				}
-			case <-stop:
-				return
 			}
-		}
-	}()
+		}()
+	})
 }

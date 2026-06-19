@@ -2,7 +2,6 @@ package main
 
 import (
 	"base-core/config"
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -32,61 +31,87 @@ type AppConfig struct {
 	Domains []DomainConfig `yaml:"domains"`
 }
 
+type RedisConfig struct {
+	Redis RedisSettings `yaml:"redis"`
+}
+
+type RedisSettings struct {
+	Mode         string   `yaml:"mode"`
+	Addr         string   `yaml:"addr"`
+	Password     string   `yaml:"password"`
+	ClusterAddrs []string `yaml:"cluster_addrs"`
+
+	PoolSize     int `yaml:"pool_size"`
+	MinIdleConns int `yaml:"min_idle_conns"`
+	MaxIdleConns int `yaml:"max_idle_conns"`
+	PoolTimeout  int `yaml:"pool_timeout"`
+
+	DialTimeout  int `yaml:"dial_timeout"`
+	ReadTimeout  int `yaml:"read_timeout"`
+	WriteTimeout int `yaml:"write_timeout"`
+
+	MaxRetries      int `yaml:"max_retries"`
+	MinRetryBackoff int `yaml:"min_retry_backoff"`
+	MaxRetryBackoff int `yaml:"max_retry_backoff"`
+
+	MaxRedirects   int  `yaml:"max_redirects"`
+	ReadOnly       bool `yaml:"read_only"`
+	RouteByLatency bool `yaml:"route_by_latency"`
+	RouteRandomly  bool `yaml:"route_randomly"`
+}
+
 func main() {
-	// 1. 加载环境变量（包含 Nacos 连接信息）
 	envCfg := config.LoadEnvConfig()
-	//初始化日志
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: envCfg.LOG_LEVEL, // 通过 config 获取日志级别
+		Level: envCfg.LOG_LEVEL,
 	}))
 	slog.SetDefault(logger)
-	// 打印环境变量
-	slog.Debug("🚀 基础环境变量加载完成:")
-	slog.Debug("NACOS_SERVER", "NACOS_SERVER", envCfg.SERVER_IP)
-	slog.Debug("NACOS_PORT", "NACOS_PORT", envCfg.SERVER_PORT)
-	slog.Debug("NAMESPACE", "NAMESPACE", envCfg.NAMESPACE)
-	slog.Debug("DATA_ID", "DATA_ID", envCfg.DATA_ID)
-	slog.Debug("GROUP", "GROUP", envCfg.GROUP)
 
-	// 2. 初始化 Nacos 客户端
-	err := config.InitNacosClient(envCfg)
-	if err != nil {
-		slog.Error("初始化 Nacos 客户端失败", "err", err)
-		return
-	}
-
-	//// 3. 从 Nacos 获取并监听 YAML 配置
-	// 这里演示如何使用自定义的 AppConfig 结构，并接收变更列表
+	// ====== 加载第1个配置: domain.yaml ======
 	var appCfg AppConfig
-	cleanup, err := config.LoadNacosConfig(envCfg, &appCfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
-		slog.Info("🔔 Nacos 配置发生变更", "diff_count", len(diffs))
+	watcher1 := config.NewWatcher[AppConfig](envCfg)
+	cleanup1, err := watcher1.Load(&appCfg, func(newCfg *AppConfig, diffs []config.ConfigDiff) {
+		slog.Info("🔔 domain.yaml 配置发生变更", "diff_count", len(diffs))
 		for _, d := range diffs {
-			slog.Info(fmt.Sprintf("变更详情: 路径=%s, 类型=%s", d.Path, d.Type))
+			slog.Info("变更详情", "path", d.Path, "type", d.Type)
 		}
 	})
-
 	if err != nil {
-		slog.Error("加载 Nacos 配置失败", "err", err)
+		slog.Error("加载 domain.yaml 失败", "err", err)
 		return
 	}
+	defer cleanup1()
 
-	// 4. 打印从 Nacos 获取的 YAML 配置内容
-	slog.Debug("📦 Nacos YAML 嵌套配置加载完成:")
+	slog.Debug("📦 domain.yaml 加载完成:")
 	slog.Debug("AppPort", "port", appCfg.Base.AppPort)
-	slog.Debug("TestMode", appCfg.Base.TestMode)
-	slog.Debug("LarkURL", appCfg.Base.LarkURL)
-	slog.Debug("Domains数:", len(appCfg.Domains))
-	for _, d := range appCfg.Domains {
-		slog.Debug("Domain",
-			slog.String("domain", d.Name),
-			slog.Any("sub_domains", d.SubDomain),
-		)
-	}
+	slog.Debug("TestMode", "testMode", appCfg.Base.TestMode)
+	slog.Debug("Domains数", "count", len(appCfg.Domains))
 
-	// 保持程序运行，以便监听配置变更
+	// ====== 加载第2个配置: redis.yaml ======
+	redisEnv := envCfg
+	redisEnv.DATA_ID = "redis.yaml" // ← 覆盖 DataId
+
+	var redisCfg RedisConfig
+	watcher2 := config.NewWatcher[RedisConfig](redisEnv)
+	cleanup2, err := watcher2.Load(&redisCfg, func(newCfg *RedisConfig, diffs []config.ConfigDiff) {
+		slog.Info("🔔 redis.yaml 配置发生变更", "diff_count", len(diffs))
+		for _, d := range diffs {
+			slog.Info("变更详情", "path", d.Path, "type", d.Type)
+		}
+	})
+	if err != nil {
+		slog.Error("加载 redis.yaml 失败", "err", err)
+		return
+	}
+	defer cleanup2()
+
+	slog.Debug("📦 redis.yaml 加载完成:")
+	slog.Debug("Redis", "mode", redisCfg.Redis.Mode, "addr", redisCfg.Redis.Addr)
+	slog.Debug("Pool", "poolSize", redisCfg.Redis.PoolSize, "minIdle", redisCfg.Redis.MinIdleConns, "maxIdle", redisCfg.Redis.MaxIdleConns)
+
+	// 等待退出信号
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	sig := <-sigCh
 	slog.Info("收到退出信号，正在关闭...", "signal", sig)
-	cleanup()
 }
