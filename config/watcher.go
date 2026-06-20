@@ -33,6 +33,7 @@ func (w *Watcher[T]) Load(dest *T, onConfigChange func(*T, []ConfigDiff)) (func(
 		DataId: w.envCfg.NACOS_DATA_ID,
 		Group:  w.envCfg.NACOS_GROUP,
 	})
+	slog.Debug("Nacos 返回的原始内容", "length", len(content), "content", content)
 	StartNacosHealthMonitor(client, w.envCfg)
 	if err != nil {
 		slog.Error("获取配置失败", "dataId", w.envCfg.NACOS_DATA_ID, "err", err)

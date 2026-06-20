@@ -14,7 +14,7 @@ func LoadEnvConfig() EnvConfig {
 		NACOS_SERVER_PORT: getEnvAsUint64("NACOS_SERVER_PORT", 8848),
 		NACOS_NAMESPACE:   getEnv("NACOS_NAMESPACE", ""),
 		NACOS_DATA_ID:     getEnv("NACOS_DATA_ID", "base-core.yaml"),
-		NACOS_GROUP:       getEnv("NACOS_GROUP", "DEFAULT_NACOS_GROUP"),
+		NACOS_GROUP:       getEnv("NACOS_GROUP", "DEFAULT_GROUP"),
 		NACOS_USER:        getEnv("NACOS_USER", "nacos"),
 		NACOS_PASSWORD:    getEnv("NACOS_PASSWORD", "nacos"),
 		LOG_LEVEL:         getLogLevel(),
