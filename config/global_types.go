@@ -47,10 +47,17 @@ type Watcher[T any] struct {
 	debouncer  *Debouncer[*watcherData[T]]
 	stopCh     chan struct{}
 	cleanup    func()
+	onError    func(string, error)
 }
 
 // watcherData 防抖器内部使用的数据结构
 type watcherData[T any] struct {
 	config *T
 	diffs  []ConfigDiff
+}
+
+// OnError 注册配置解析失败时的回调
+func (w *Watcher[T]) OnError(handler func(dataId string, err error)) *Watcher[T] {
+	w.onError = handler
+	return w
 }

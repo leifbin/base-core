@@ -68,6 +68,9 @@ func (w *Watcher[T]) Load(dest *T, onConfigChange func(*T, []ConfigDiff)) (func(
 			if unmarshalErr := yaml.Unmarshal([]byte(data), &newConfig); unmarshalErr != nil {
 				UpdateNacosHealth(false, "Config parse error: "+unmarshalErr.Error())
 				slog.Error("解析更新后的配置失败", "dataId", dataId, "err", unmarshalErr)
+				if w.onError != nil {
+					w.onError(dataId, unmarshalErr)
+				}
 				return
 			}
 			w.mu.RLock()
