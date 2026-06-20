@@ -36,8 +36,8 @@ func StartNacosHealthMonitor(configClient config_client.IConfigClient, cfg EnvCo
 
 			for range ticker.C {
 				_, err := configClient.GetConfig(vo.ConfigParam{
-					DataId: cfg.DATA_ID,
-					Group:  cfg.GROUP,
+					DataId: cfg.NACOS_DATA_ID,
+					Group:  cfg.NACOS_GROUP,
 				})
 				if err != nil {
 					UpdateNacosHealth(false, "Nacos connection failed: "+err.Error())

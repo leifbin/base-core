@@ -10,14 +10,14 @@ import (
 // LoadEnvConfig 从环境变量加载基础配置（包含 Nacos 连接信息）
 func LoadEnvConfig() EnvConfig {
 	return EnvConfig{
-		SERVER_IP:   getEnv("NACOS_SERVER_IP", "127.0.0.1"),
-		SERVER_PORT: getEnvAsUint64("NACOS_SERVER_PORT", 8848),
-		NAMESPACE:   getEnv("NACOS_NAMESPACE", ""),
-		DATA_ID:     getEnv("NACOS_DATA_ID", "base-core.yaml"),
-		GROUP:       getEnv("NACOS_GROUP", "DEFAULT_GROUP"),
-		NACOSUSER:   getEnv("NACOS_USER", "nacos"),
-		PASSWORD:    getEnv("NACOS_PASSWORD", "nacos"),
-		LOG_LEVEL:   getLogLevel(),
+		NACOS_SERVER_IP:   getEnv("NACOS_SERVER_IP", "127.0.0.1"),
+		NACOS_SERVER_PORT: getEnvAsUint64("NACOS_SERVER_PORT", 8848),
+		NACOS_NAMESPACE:   getEnv("NACOS_NAMESPACE", ""),
+		NACOS_DATA_ID:     getEnv("NACOS_DATA_ID", "base-core.yaml"),
+		NACOS_GROUP:       getEnv("NACOS_GROUP", "DEFAULT_NACOS_GROUP"),
+		NACOS_USER:        getEnv("NACOS_USER", "nacos"),
+		NACOS_PASSWORD:    getEnv("NACOS_PASSWORD", "nacos"),
+		LOG_LEVEL:         getLogLevel(),
 	}
 }
 

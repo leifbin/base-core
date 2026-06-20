@@ -30,17 +30,17 @@ func (w *Watcher[T]) Load(dest *T, onConfigChange func(*T, []ConfigDiff)) (func(
 
 	// 拉取初始配置
 	content, err := client.GetConfig(vo.ConfigParam{
-		DataId: w.envCfg.DATA_ID,
-		Group:  w.envCfg.GROUP,
+		DataId: w.envCfg.NACOS_DATA_ID,
+		Group:  w.envCfg.NACOS_GROUP,
 	})
 	StartNacosHealthMonitor(client, w.envCfg)
 	if err != nil {
-		slog.Error("获取配置失败", "dataId", w.envCfg.DATA_ID, "err", err)
+		slog.Error("获取配置失败", "dataId", w.envCfg.NACOS_DATA_ID, "err", err)
 		return nil, err
 	}
 
 	if err := yaml.Unmarshal([]byte(content), dest); err != nil {
-		slog.Error("解析配置失败", "dataId", w.envCfg.DATA_ID, "err", err)
+		slog.Error("解析配置失败", "dataId", w.envCfg.NACOS_DATA_ID, "err", err)
 		return nil, err
 	}
 
@@ -54,15 +54,15 @@ func (w *Watcher[T]) Load(dest *T, onConfigChange func(*T, []ConfigDiff)) (func(
 		w.mu.Lock()
 		w.lastConfig = data.config
 		w.mu.Unlock()
-		slog.Debug(">>>防抖触发配置变更回调>>>", "dataId", w.envCfg.DATA_ID, "diffs_count", len(data.diffs))
+		slog.Debug(">>>防抖触发配置变更回调>>>", "dataId", w.envCfg.NACOS_DATA_ID, "diffs_count", len(data.diffs))
 		onConfigChange(data.config, data.diffs)
 	})
 
 	// 注册 Nacos 监听
 	err = client.ListenConfig(vo.ConfigParam{
-		DataId: w.envCfg.DATA_ID,
-		Group:  w.envCfg.GROUP,
-		OnChange: func(namespace, group, dataId, data string) {
+		DataId: w.envCfg.NACOS_DATA_ID,
+		Group:  w.envCfg.NACOS_GROUP,
+		OnChange: func(NACOS_NAMESPACE, NACOS_GROUP, dataId, data string) {
 			var newConfig T
 			if unmarshalErr := yaml.Unmarshal([]byte(data), &newConfig); unmarshalErr != nil {
 				UpdateNacosHealth(false, "Config parse error: "+unmarshalErr.Error())
@@ -83,7 +83,7 @@ func (w *Watcher[T]) Load(dest *T, onConfigChange func(*T, []ConfigDiff)) (func(
 		},
 	})
 	if err != nil {
-		slog.Error("监听配置失败", "dataId", w.envCfg.DATA_ID, "err", err)
+		slog.Error("监听配置失败", "dataId", w.envCfg.NACOS_DATA_ID, "err", err)
 		return nil, err
 	}
 

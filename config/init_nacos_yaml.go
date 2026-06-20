@@ -21,17 +21,17 @@ var (
 // 在调用 LoadNacosConfig 或 FetchAppConfigFromNacos 前需先调用此函数。
 func InitNacosClient(cfg EnvConfig) error {
 	serverConfig := []constant.ServerConfig{
-		{IpAddr: cfg.SERVER_IP, Port: cfg.SERVER_PORT},
+		{IpAddr: cfg.NACOS_SERVER_IP, Port: cfg.NACOS_SERVER_PORT},
 	}
 
 	clientConfig := constant.ClientConfig{
-		NamespaceId: cfg.NAMESPACE,
+		NamespaceId: cfg.NACOS_NAMESPACE,
 		TimeoutMs:   1000,
 		LogDir:      "./logs",
 		CacheDir:    "./cache",
 		LogLevel:    "debug",
-		Username:    cfg.NACOSUSER,
-		Password:    cfg.PASSWORD,
+		Username:    cfg.NACOS_USER,
+		Password:    cfg.NACOS_PASSWORD,
 	}
 
 	client, err := clients.CreateConfigClient(map[string]interface{}{
@@ -55,8 +55,8 @@ func FetchAppConfigFromNacos[T any](cfg EnvConfig, dest *T) error {
 		return fmt.Errorf("nacos client 未初始化")
 	}
 	content, err := client.GetConfig(vo.ConfigParam{
-		DataId: cfg.DATA_ID,
-		Group:  cfg.GROUP,
+		DataId: cfg.NACOS_DATA_ID,
+		Group:  cfg.NACOS_GROUP,
 	})
 	if err != nil {
 		return err

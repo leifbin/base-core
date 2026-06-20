@@ -90,7 +90,7 @@ func main() {
 
 	// ====== 加载第2个配置: redis.yaml ======
 	redisEnv := envCfg
-	redisEnv.DATA_ID = "redis.yaml" // ← 覆盖 DataId
+	redisEnv.NACOS_DATA_ID = "redis.yaml" // ← 覆盖 DataId
 
 	var redisCfg RedisConfig
 	watcher2 := config.NewWatcher[RedisConfig](redisEnv)

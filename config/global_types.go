@@ -11,14 +11,14 @@ import (
 
 // EnvConfig 结构体定义基础环境变量配置（用于连接 Nacos）
 type EnvConfig struct {
-	SERVER_IP   string
-	SERVER_PORT uint64
-	NAMESPACE   string
-	DATA_ID     string
-	GROUP       string
-	NACOSUSER   string
-	PASSWORD    string
-	LOG_LEVEL   slog.Level
+	NACOS_SERVER_IP   string
+	NACOS_SERVER_PORT uint64
+	NACOS_NAMESPACE   string
+	NACOS_DATA_ID     string
+	NACOS_GROUP       string
+	NACOS_USER        string
+	NACOS_PASSWORD    string
+	LOG_LEVEL         slog.Level
 }
 
 // Debouncer 泛型防抖器
